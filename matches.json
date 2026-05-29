@@ -1,0 +1,60 @@
+[
+  {
+    "id": "mpq3slrhpsji1",
+    "roomCode": "TEST",
+    "levelId": 42,
+    "difficulty": "hard",
+    "players": [
+      {
+        "name": "Alice",
+        "status": "won",
+        "timeMs": 12500
+      },
+      {
+        "name": "Bob",
+        "status": "failed",
+        "timeMs": null
+      }
+    ],
+    "winner": "Alice",
+    "createdAt": "2026-05-28T23:07:42.509Z"
+  },
+  {
+    "id": "mpq42wp4n1q4h",
+    "roomCode": "2ECT",
+    "levelId": 2,
+    "difficulty": "Expert",
+    "players": [
+      {
+        "name": "Aj",
+        "status": "won",
+        "timeMs": 0
+      },
+      {
+        "name": "Mj",
+        "status": "abandoned"
+      }
+    ],
+    "winner": "Aj",
+    "createdAt": "2026-05-28T23:15:43.240Z"
+  },
+  {
+    "id": "mpq45z96vkv0z",
+    "roomCode": "UVCL",
+    "levelId": 1,
+    "difficulty": "Expert",
+    "players": [
+      {
+        "name": "Aj",
+        "status": "won",
+        "timeMs": 0
+      },
+      {
+        "name": "Mj",
+        "status": "abandoned"
+      }
+    ],
+    "winner": "Aj",
+    "createdAt": "2026-05-28T23:18:06.522Z"
+  }
+]

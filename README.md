@@ -1,63 +1,92 @@
-# Arrow Escape - Multiplayer Backend
+# Arrow Escape - Multiplayer Backend (Vercel Serverless)
 
-This is the WebSocket-based multiplayer server for the Arrow Escape game. It allows two players to join a private room using a room code, synchronize gameplay, track progress in real-time, and determine the winner based on completion speed.
+This backend has been migrated from a long-running WebSocket server to **Vercel Serverless Functions**, using **Pusher Channels** for real-time events and **Upstash Redis** for storing room states.
 
-## Features
-- **Room Management**: Create or join rooms via a 4-letter alphanumeric code.
-- **Random Levels**: Auto-selects a random level from the built-in level pool.
-- **Real-time Progress Sync**: Broadcasts the remaining arrow counts between players during matches.
-- **Winner Calculations**: Declares the winner dynamically based on the first to successfully complete the level.
-- **Rematches**: Seamlessly restart matches with new random levels.
-- **Local Match Logs**: Persists match logs, completion times, and winners locally in a `matches.json` file.
+## Architecture
+
+- **Server Type**: Vercel Serverless Functions
+- **Real-Time Connections**: Pusher Channels (WebSocket abstraction)
+- **Room State Persistence**: Upstash Redis (Memory DB)
+- **Game Starts Countdown**: Timestamp-based synchronized clients
 
 ---
 
-## Setup Instructions
+## Setup & External Services
 
-### 1. Install Dependencies
-Navigate to the `Backend` directory and install the packages:
-```bash
-npm install
-```
+You will need accounts on two free external services:
 
-### 2. Configure Environment
-Make sure a `.env` file exists in the `Backend` folder containing:
+1. **Pusher** (https://pusher.com)
+   - Create a free account.
+   - Create a channel app.
+   - Get the credentials (`appId`, `key`, `secret`, `cluster`).
+2. **Upstash Redis** (https://upstash.com)
+   - Create a free database.
+   - Copy the `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN`.
+
+---
+
+## Environment Configuration
+
+Create a `.env` file in the `Backend` directory with the following variables:
+
 ```env
-PORT=3000
-```
+# Pusher Credentials
+PUSHER_APP_ID=your_pusher_app_id
+PUSHER_KEY=your_pusher_key
+PUSHER_SECRET=your_pusher_secret
+PUSHER_CLUSTER=ap2
 
-### 3. Run the Server
-Start the server in development mode (with auto-reload):
-```bash
-npm run dev
+# Upstash Redis Credentials
+UPSTASH_REDIS_REST_URL=https://your-redis-url.upstash.io
+UPSTASH_REDIS_REST_TOKEN=your_upstash_token
 ```
-Or start in standard production mode:
-```bash
-npm start
-```
-The server will bind to `http://localhost:3000` and the WebSocket will run on `ws://localhost:3000`.
 
 ---
 
-## Exposing the Server with Ngrok
+## Local Development
 
-To connect physical mobile devices (e.g. your phone running Expo Go) to your local server, you must expose it via a public tunnel:
+To run and test the serverless backend locally:
 
-### 1. Start Ngrok Tunnel
-Run the following command on your local machine:
-```bash
-ngrok http 3000
-```
+1. **Install Vercel CLI**:
+   ```bash
+   npm install -g vercel
+   ```
+2. **Install project dependencies**:
+   ```bash
+   npm install
+   ```
+3. **Start the local server**:
+   ```bash
+   npm run dev
+   ```
+   This starts the Vercel local dev server at `http://localhost:3000`. You can test endpoints (like `http://localhost:3000/api/health`).
 
-### 2. Get the Tunnel URL
-Ngrok will print a public address like:
-```text
-Forwarding     https://8a4f-122-161-51-143.ngrok-free.app -> http://localhost:3000
-```
+---
 
-### 3. Connect from the Game
-Copy the `https://...` address (change `https` to `wss` or the app will automatically handle it) and paste it into the **Server URL** input in the Multiplayer screen of the app.
-- For example: `wss://8a4f-122-161-51-143.ngrok-free.app`
-- If you are testing on local emulators:
-  - **iOS Simulator**: `ws://localhost:3000`
-  - **Android Emulator**: `ws://10.0.2.2:3000`
+## Vercel Deployment
+
+Deploy the backend to production on Vercel:
+
+1. **Log in to Vercel**:
+   ```bash
+   vercel login
+   ```
+2. **Link and deploy**:
+   ```bash
+   vercel
+   ```
+3. **Add environment variables**:
+   Set the `.env` values in the Vercel Project Dashboard under Settings > Environment Variables.
+4. **Deploy to production**:
+   ```bash
+   npm run deploy
+   ```
+
+---
+
+## Connecting Frontend to Backend
+
+In the mobile app's **Battle Arena** setup screen:
+1. Paste your deployed Vercel URL in **Server URL** (e.g. `https://your-app.vercel.app`).
+2. Paste your Pusher Key in **Pusher App Key** (e.g. `your_pusher_key`).
+3. Press **Create Room** or **Join Room**!

@@ -3,11 +3,14 @@
   "version": "2.0.0",
   "description": "Multiplayer Backend for Arrow Escape Game (Vercel Serverless)",
   "scripts": {
-    "dev": "vercel dev",
+    "dev-server": "vercel dev",
     "deploy": "vercel --prod"
   },
   "dependencies": {
     "@upstash/redis": "^1.34.9",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
     "pusher": "^5.2.0"
   },
   "devDependencies": {

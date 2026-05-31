@@ -1,6 +1,6 @@
 const { generateUniqueRoomCode, setRoom } = require('./_lib/rooms');
 const pusher = require('./_lib/pusher');
-const levelsData = require('../level.json');
+const { getGameLevels } = require('./_lib/config');
 
 module.exports = async (req, res) => {
   if (req.method === 'OPTIONS') return res.status(200).end();
@@ -14,6 +14,7 @@ module.exports = async (req, res) => {
 
     const playerName = name.trim();
     const roomCode = await generateUniqueRoomCode();
+    const levelsData = await getGameLevels();
     const randomLevel = levelsData[Math.floor(Math.random() * levelsData.length)];
 
     const room = {

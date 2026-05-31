@@ -45,21 +45,49 @@ UPSTASH_REDIS_REST_TOKEN=your_upstash_token
 
 ## Local Development
 
-To run and test the serverless backend locally:
+You can run the backend APIs locally in two ways:
 
+### Option A: Standard Express Server (No Vercel login required — Recommended)
+We provide a local Express runner [local-server.js](file:///d:/WORK_RELATED/Arrow_Game_Full_project/Arrow-Game-Backend/local-server.js) that maps Vercel Serverless Function signatures to local Express endpoints.
+
+1. **Install dependencies**:
+   ```bash
+   npm install
+   ```
+2. **Start the local server**:
+   ```bash
+   node local-server.js
+   ```
+   This starts the backend locally at `http://localhost:3000` with cors enabled and a **10mb** payload limit for uploading custom levels.
+
+---
+
+### Option B: Vercel Dev CLI (Requires Vercel login)
 1. **Install Vercel CLI**:
    ```bash
    npm install -g vercel
    ```
-2. **Install project dependencies**:
-   ```bash
-   npm install
-   ```
-3. **Start the local server**:
+2. **Start the Vercel local environment**:
    ```bash
    npm run dev
    ```
-   This starts the Vercel local dev server at `http://localhost:3000`. You can test endpoints (like `http://localhost:3000/api/health`).
+
+---
+
+## 🔧 Database Management & Admin Panel
+
+### 1. Web Admin Panel
+Open [index.html](file:///d:/WORK_RELATED/Arrow_Game_Full_project/Admin_Panel/index.html) in your browser. Configure it to connect to your server URL (e.g. `http://localhost:3000`) and optional `Admin Secret` password.
+* **Live Multiplayer**: View active matches, joined players, progress, and close lobbies.
+* **Levels Manager**: Browse, add, edit (with JSON verification), and delete levels.
+* **Music & Icons**: Customize background music/SFX URLs and Home Screen logos dynamically.
+
+### 2. Local Database Script CLI
+We also provide a CLI script to manage the database configs from your terminal:
+* **Show DB Status**: `node scripts/update-db.js status`
+* **Upload Levels**: `node scripts/update-db.js levels`
+* **Update Music**: Edit custom links in [update-db.js](file:///d:/WORK_RELATED/Arrow_Game_Full_project/Arrow-Game-Backend/scripts/update-db.js#L136-L149) and run `node scripts/update-db.js music`
+* **Update Icons**: `node scripts/update-db.js icons`
 
 ---
 
@@ -67,26 +95,32 @@ To run and test the serverless backend locally:
 
 Deploy the backend to production on Vercel:
 
-1. **Log in to Vercel**:
+1. **Link your Vercel Project**:
    ```bash
-   vercel login
+   npx vercel
    ```
-2. **Link and deploy**:
+2. **Add Environment Variables**:
+   Add the following variables in your Vercel Dashboard under **Settings > Environment Variables**:
+   * `PUSHER_APP_ID`, `PUSHER_KEY`, `PUSHER_SECRET`, `PUSHER_CLUSTER`
+   * `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`
+   * `ADMIN_SECRET` (A custom password of your choice to protect your Admin Panel writes)
+3. **Deploy to production**:
    ```bash
-   vercel
-   ```
-3. **Add environment variables**:
-   Set the `.env` values in the Vercel Project Dashboard under Settings > Environment Variables.
-4. **Deploy to production**:
-   ```bash
-   npm run deploy
+   npx vercel --prod
    ```
 
 ---
 
-## Connecting Frontend to Backend
+## Connecting Frontend App to Backend
 
-In the mobile app's **Battle Arena** setup screen:
-1. Paste your deployed Vercel URL in **Server URL** (e.g. `https://your-app.vercel.app`).
-2. Paste your Pusher Key in **Pusher App Key** (e.g. `your_pusher_key`).
-3. Press **Create Room** or **Join Room**!
+### A. For Local Testing
+Because a physical phone or simulator cannot connect to `localhost`, you must connect using your computer's local IP address:
+1. Find your computer's IP address (e.g., run `ipconfig` on Windows, check the `IPv4 Address` like `192.168.1.5`).
+2. In the mobile app, go to **Multiplayer Mode**.
+3. Under **Server URL**, change the URL to `http://YOUR_LOCAL_IP:3000` (e.g., `http://192.168.1.5:3000`).
+4. Trigger a room creation or join once to cache the local URL in the app's AsyncStorage. On next launch, your singleplayer mode will automatically load levels and music from your local server.
+
+### B. For Production
+In the mobile app's **Multiplayer Mode**:
+1. Change **Server URL** to your deployed Vercel production URL (e.g., `https://arrow-game-backend.vercel.app`).
+2. Trigger room creation once to save it in AsyncStorage.

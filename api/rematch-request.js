@@ -1,6 +1,6 @@
 const { getRoom, setRoom } = require('./_lib/rooms');
 const pusher = require('./_lib/pusher');
-const levelsData = require('../level.json');
+const { getGameLevels } = require('./_lib/config');
 
 module.exports = async (req, res) => {
   if (req.method === 'OPTIONS') return res.status(200).end();
@@ -35,6 +35,7 @@ module.exports = async (req, res) => {
 
     // If both players agreed to rematch → reset room and start new game
     if (room.players.length === 2 && room.players.every(p => p.ready)) {
+      const levelsData = await getGameLevels();
       const randomLevel = levelsData[Math.floor(Math.random() * levelsData.length)];
       room.level = randomLevel;
       room.status = 'lobby';

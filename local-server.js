@@ -50,12 +50,15 @@ app.post('/api/leave-room', adaptHandler('./api/leave-room'));
 app.post('/api/update-progress', adaptHandler('./api/update-progress'));
 app.post('/api/player-finished', adaptHandler('./api/player-finished'));
 app.post('/api/player-failed', adaptHandler('./api/player-failed'));
+app.post('/api/register-user', adaptHandler('./api/register-user'));
 app.get('/api/health', adaptHandler('./api/health'));
 
 // Dynamic config & Admin routes
 app.get('/api/config', adaptHandler('./api/config'));
 app.get('/api/admin/rooms', adaptHandler('./api/admin/rooms'));
 app.post('/api/admin/update-config', adaptHandler('./api/admin/update-config'));
+app.get('/api/admin/users', adaptHandler('./api/admin/users'));
+app.post('/api/admin/toggle-user-levels', adaptHandler('./api/admin/toggle-user-levels'));
 
 // Default 404 for unmatched routes
 app.use((req, res) => {

@@ -12,7 +12,7 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 
 // Helper to adapt Vercel Serverless Function signature (req, res) to Express
-function adaptHandler(handlerPath) {
+function adaptHandler(handler) {
   return async (req, res) => {
     try {
       // Mock Vercel response helper methods if needed
@@ -20,34 +20,50 @@ function adaptHandler(handlerPath) {
         res.statusCode = code;
         return res;
       };
-      
-      const handler = require(handlerPath);
       await handler(req, res);
     } catch (err) {
-      console.error(`❌ Error in handler [${handlerPath}]:`, err);
+      console.error(`❌ Error in handler:`, err);
       res.status(500).json({ error: 'Internal server error', details: err.message });
     }
   };
 }
 
+// Static imports so Vercel's bundler can trace and package the dependencies
+const createRoom = require('./_create-room');
+const joinRoom = require('./_join-room');
+const toggleReady = require('./_toggle-ready');
+const rematchRequest = require('./_rematch-request');
+const leaveRoom = require('./_leave-room');
+const updateProgress = require('./_update-progress');
+const playerFinished = require('./_player-finished');
+const playerFailed = require('./_player-failed');
+const registerUser = require('./_register-user');
+const health = require('./_health');
+const config = require('./_config');
+
+const adminRooms = require('./_admin/rooms');
+const adminUpdateConfig = require('./_admin/update-config');
+const adminUsers = require('./_admin/users');
+const adminToggleUserLevels = require('./_admin/toggle-user-levels');
+
 // Map Vercel Serverless routes to local Express endpoints
-app.post('/api/create-room', adaptHandler('./_create-room'));
-app.post('/api/join-room', adaptHandler('./_join-room'));
-app.post('/api/toggle-ready', adaptHandler('./_toggle-ready'));
-app.post('/api/rematch-request', adaptHandler('./_rematch-request'));
-app.post('/api/leave-room', adaptHandler('./_leave-room'));
-app.post('/api/update-progress', adaptHandler('./_update-progress'));
-app.post('/api/player-finished', adaptHandler('./_player-finished'));
-app.post('/api/player-failed', adaptHandler('./_player-failed'));
-app.post('/api/register-user', adaptHandler('./_register-user'));
-app.get('/api/health', adaptHandler('./_health'));
+app.post('/api/create-room', adaptHandler(createRoom));
+app.post('/api/join-room', adaptHandler(joinRoom));
+app.post('/api/toggle-ready', adaptHandler(toggleReady));
+app.post('/api/rematch-request', adaptHandler(rematchRequest));
+app.post('/api/leave-room', adaptHandler(leaveRoom));
+app.post('/api/update-progress', adaptHandler(updateProgress));
+app.post('/api/player-finished', adaptHandler(playerFinished));
+app.post('/api/player-failed', adaptHandler(playerFailed));
+app.post('/api/register-user', adaptHandler(registerUser));
+app.get('/api/health', adaptHandler(health));
 
 // Dynamic config & Admin routes
-app.get('/api/config', adaptHandler('./_config'));
-app.get('/api/admin/rooms', adaptHandler('./_admin/rooms'));
-app.post('/api/admin/update-config', adaptHandler('./_admin/update-config'));
-app.get('/api/admin/users', adaptHandler('./_admin/users'));
-app.post('/api/admin/toggle-user-levels', adaptHandler('./_admin/toggle-user-levels'));
+app.get('/api/config', adaptHandler(config));
+app.get('/api/admin/rooms', adaptHandler(adminRooms));
+app.post('/api/admin/update-config', adaptHandler(adminUpdateConfig));
+app.get('/api/admin/users', adaptHandler(adminUsers));
+app.post('/api/admin/toggle-user-levels', adaptHandler(adminToggleUserLevels));
 
 // Default 404 for unmatched routes
 app.use((req, res) => {

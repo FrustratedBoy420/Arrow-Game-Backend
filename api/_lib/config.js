@@ -1,22 +1,43 @@
 const redis = require('./redis');
 const staticLevels = require('../../level.json');
 
+// In-memory cache variables for serverless warm starts
+let cachedLevels = null;
+let cachedLevelsTime = 0;
+
+let cachedMusic = null;
+let cachedMusicTime = 0;
+
+let cachedIcons = null;
+let cachedIconsTime = 0;
+
+const CACHE_TTL = 1000 * 60 * 5; // 5 minutes cache TTL
+
 /**
  * Fetch levels from Redis.
  * If not present in Redis, seed Redis with the local level.json contents and return them.
  */
 async function getGameLevels() {
+  const now = Date.now();
+  if (cachedLevels && (now - cachedLevelsTime) < CACHE_TTL) {
+    return cachedLevels;
+  }
+
   try {
     const levelsStr = await redis.get('game:levels');
     if (levelsStr) {
-      // If it's a string, parse it, otherwise if it's already an array/object from redis client return it
       const levels = typeof levelsStr === 'string' ? JSON.parse(levelsStr) : levelsStr;
       if (Array.isArray(levels) && levels.length > 0) {
+        cachedLevels = levels;
+        cachedLevelsTime = now;
         return levels;
       }
     }
   } catch (err) {
     console.error('⚠️ Error reading levels from Redis:', err);
+    if (cachedLevels) {
+      return cachedLevels; // Fallback to stale cache if Redis fails
+    }
   }
 
   // Fallback and seed
@@ -26,6 +47,9 @@ async function getGameLevels() {
   } catch (err) {
     console.error('⚠️ Failed to seed levels to Redis:', err);
   }
+  
+  cachedLevels = staticLevels;
+  cachedLevelsTime = now;
   return staticLevels;
 }
 
@@ -34,6 +58,11 @@ async function getGameLevels() {
  * Returns default/null URLs if not set.
  */
 async function getGameMusic() {
+  const now = Date.now();
+  if (cachedMusic && (now - cachedMusicTime) < CACHE_TTL) {
+    return cachedMusic;
+  }
+
   const defaultMusic = {
     correct: null,
     wrong: null,
@@ -45,10 +74,14 @@ async function getGameMusic() {
   try {
     const musicStr = await redis.get('game:music');
     if (musicStr) {
-      return typeof musicStr === 'string' ? JSON.parse(musicStr) : musicStr;
+      const music = typeof musicStr === 'string' ? JSON.parse(musicStr) : musicStr;
+      cachedMusic = music;
+      cachedMusicTime = now;
+      return music;
     }
   } catch (err) {
     console.error('⚠️ Error reading music from Redis:', err);
+    if (cachedMusic) return cachedMusic;
   }
 
   return defaultMusic;
@@ -59,6 +92,11 @@ async function getGameMusic() {
  * Returns default icon settings if not set.
  */
 async function getGameIcons() {
+  const now = Date.now();
+  if (cachedIcons && (now - cachedIconsTime) < CACHE_TTL) {
+    return cachedIcons;
+  }
+
   const defaultIcons = {
     homeArrow: '➤'
   };
@@ -66,10 +104,14 @@ async function getGameIcons() {
   try {
     const iconsStr = await redis.get('game:icons');
     if (iconsStr) {
-      return typeof iconsStr === 'string' ? JSON.parse(iconsStr) : iconsStr;
+      const icons = typeof iconsStr === 'string' ? JSON.parse(iconsStr) : iconsStr;
+      cachedIcons = icons;
+      cachedIconsTime = now;
+      return icons;
     }
   } catch (err) {
     console.error('⚠️ Error reading icons from Redis:', err);
+    if (cachedIcons) return cachedIcons;
   }
 
   return defaultIcons;
@@ -79,15 +121,25 @@ async function getGameIcons() {
  * Update game configurations in Redis.
  */
 async function setGameConfig(type, data) {
+  const now = Date.now();
   if (type === 'levels') {
     if (!Array.isArray(data)) throw new Error('Levels config must be a JSON array');
     await redis.set('game:levels', JSON.stringify(data));
+    // Update local cache
+    cachedLevels = data;
+    cachedLevelsTime = now;
   } else if (type === 'music') {
     if (typeof data !== 'object' || data === null) throw new Error('Music config must be a JSON object');
     await redis.set('game:music', JSON.stringify(data));
+    // Update local cache
+    cachedMusic = data;
+    cachedMusicTime = now;
   } else if (type === 'icons') {
     if (typeof data !== 'object' || data === null) throw new Error('Icons config must be a JSON object');
     await redis.set('game:icons', JSON.stringify(data));
+    // Update local cache
+    cachedIcons = data;
+    cachedIconsTime = now;
   } else if (type === 'room_terminate') {
     if (typeof data !== 'string') throw new Error('Room code must be a string');
     await redis.del(`room:${data.toUpperCase()}`);

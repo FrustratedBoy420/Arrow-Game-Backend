@@ -22,16 +22,28 @@ module.exports = async (req, res) => {
     // Fetch all user systemIds from the Redis Set
     const systemIds = await redis.smembers('game:users');
     const users = [];
+    const staleIds = [];
 
     if (systemIds && systemIds.length > 0) {
       // Fetch user profile details in parallel
       const rawUsers = await Promise.all(systemIds.map(id => redis.get(`user:${id}`)));
-      rawUsers.forEach((u) => {
+      rawUsers.forEach((u, idx) => {
         if (u) {
           const userData = typeof u === 'string' ? JSON.parse(u) : u;
           users.push(userData);
+        } else {
+          // Key expired (user inactive for 30+ days) — mark for lazy cleanup
+          staleIds.push(systemIds[idx]);
         }
       });
+    }
+
+    // Lazily remove stale IDs from the index set (fire-and-forget)
+    if (staleIds.length > 0) {
+      redis.srem('game:users', ...staleIds).catch(err =>
+        console.error('⚠️ Failed to remove stale user IDs:', err)
+      );
+      console.log(`🧹 Lazily removed ${staleIds.length} expired user ID(s) from index.`);
     }
 
     console.log(`✅ Returned ${users.length} user profiles.`);

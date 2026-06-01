@@ -1,4 +1,4 @@
-const { getRoom, setRoom, deleteRoom } = require('./_lib/rooms');
+const { getRoom, setRoom, setRoomExpiring, deleteRoom } = require('./_lib/rooms');
 const pusher = require('./_lib/pusher');
 
 module.exports = async (req, res) => {
@@ -34,7 +34,8 @@ module.exports = async (req, res) => {
         remainingPlayer.timeMs = 0;
         room.status = 'finished';
 
-        await setRoom(code, room);
+        // Use short 5-minute TTL — room auto-deletes after results are seen
+        await setRoomExpiring(code, room);
 
         await pusher.trigger(`room-${code}`, 'match_results', {
           winner: remainingPlayer.name,

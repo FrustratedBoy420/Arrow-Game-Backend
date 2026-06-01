@@ -1,7 +1,10 @@
 const redis = require('./redis');
 
-// Room expires in Redis after 2 hours of inactivity
+// Room expires in Redis after 2 hours of inactivity (lobby / active game)
 const ROOM_TTL_SECONDS = 60 * 60 * 2;
+
+// Finished rooms expire quickly — 5 minutes is plenty to read results
+const ROOM_FINISHED_TTL_SECONDS = 60 * 5;
 
 /**
  * Fetch a room object from Redis by its 4-letter code.
@@ -17,6 +20,14 @@ async function getRoom(roomCode) {
  */
 async function setRoom(roomCode, roomData) {
   await redis.set(`room:${roomCode.toUpperCase()}`, roomData, { ex: ROOM_TTL_SECONDS });
+}
+
+/**
+ * Save a finished/abandoned room with a short 5-minute TTL.
+ * After this window the room is automatically removed from Redis.
+ */
+async function setRoomExpiring(roomCode, roomData) {
+  await redis.set(`room:${roomCode.toUpperCase()}`, roomData, { ex: ROOM_FINISHED_TTL_SECONDS });
 }
 
 /**
@@ -48,4 +59,5 @@ async function generateUniqueRoomCode() {
   return code;
 }
 
-module.exports = { getRoom, setRoom, deleteRoom, generateUniqueRoomCode };
+module.exports = { getRoom, setRoom, setRoomExpiring, deleteRoom, generateUniqueRoomCode };
+

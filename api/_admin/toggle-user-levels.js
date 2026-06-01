@@ -32,8 +32,8 @@ module.exports = async (req, res) => {
     const userData = typeof userStr === 'string' ? JSON.parse(userStr) : userStr;
     userData.unlocked = !!unlocked;
 
-    // Save updated user record back to Redis
-    await redis.set(key, JSON.stringify(userData));
+    // Save updated user record back to Redis, preserving the existing 30-day TTL
+    await redis.set(key, JSON.stringify(userData), { keepttl: true });
 
     console.log(`🔧 Admin updated level access for User [${userData.name}] (System ID: ${systemId}) to Unlocked: ${userData.unlocked}`);
 

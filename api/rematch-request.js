@@ -16,7 +16,16 @@ module.exports = async (req, res) => {
     const code = roomCode.trim().toUpperCase();
 
     const room = await getRoom(code);
-    if (!room || room.status !== 'finished') {
+    if (!room) {
+      return res.status(404).json({ type: 'error', data: { message: 'Room not found' } });
+    }
+
+    if (room.status === 'lobby' || room.status === 'playing') {
+      console.log(`🔄 Rematch already started or in progress for room [${code}]. Silently returning success.`);
+      return res.status(200).json({ success: true });
+    }
+
+    if (room.status !== 'finished') {
       return res.status(400).json({ type: 'error', data: { message: 'Room not in finished state' } });
     }
 

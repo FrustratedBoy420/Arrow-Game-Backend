@@ -1,17 +1,18 @@
-const { getGameLevels, getGameMusic, getGameIcons } = require('./_lib/config');
+const { getGameLevels, getGameMusic, getGameIcons, getGameVersion } = require('./_lib/config');
 
 /**
- * Public config endpoint — returns Pusher public credentials and dynamic game configuration (levels, music, icons) to the frontend.
+ * Public config endpoint — returns Pusher public credentials and dynamic game configuration (levels, music, icons, version) to the frontend.
  * Note: PUSHER_KEY is safe to expose (it's the public key, not the secret).
  */
 module.exports = async (req, res) => {
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   try {
-    const [levels, music, icons] = await Promise.all([
+    const [levels, music, icons, version] = await Promise.all([
       getGameLevels(),
       getGameMusic(),
-      getGameIcons()
+      getGameIcons(),
+      getGameVersion()
     ]);
 
     return res.status(200).json({
@@ -19,7 +20,8 @@ module.exports = async (req, res) => {
       pusherCluster: process.env.PUSHER_CLUSTER,
       levels,
       music,
-      icons
+      icons,
+      version
     });
   } catch (err) {
     console.error('❌ Error getting config:', err);

@@ -117,6 +117,40 @@ async function getGameIcons() {
   return defaultIcons;
 }
 
+let cachedVersion = null;
+let cachedVersionTime = 0;
+
+/**
+ * Fetch version configurations from Redis.
+ * Returns default v1.0.0 versions if not set.
+ */
+async function getGameVersion() {
+  const now = Date.now();
+  if (cachedVersion && (now - cachedVersionTime) < CACHE_TTL) {
+    return cachedVersion;
+  }
+
+  const defaultVersion = {
+    latest: '1.0.0',
+    critical: '1.0.0'
+  };
+
+  try {
+    const versionStr = await redis.get('game:version');
+    if (versionStr) {
+      const version = typeof versionStr === 'string' ? JSON.parse(versionStr) : versionStr;
+      cachedVersion = version;
+      cachedVersionTime = now;
+      return version;
+    }
+  } catch (err) {
+    console.error('⚠️ Error reading version from Redis:', err);
+    if (cachedVersion) return cachedVersion;
+  }
+
+  return defaultVersion;
+}
+
 /**
  * Update game configurations in Redis.
  */
@@ -140,6 +174,12 @@ async function setGameConfig(type, data) {
     // Update local cache
     cachedIcons = data;
     cachedIconsTime = now;
+  } else if (type === 'version') {
+    if (typeof data !== 'object' || data === null) throw new Error('Version config must be a JSON object');
+    await redis.set('game:version', JSON.stringify(data));
+    // Update local cache
+    cachedVersion = data;
+    cachedVersionTime = now;
   } else if (type === 'room_terminate') {
     if (typeof data !== 'string') throw new Error('Room code must be a string');
     await redis.del(`room:${data.toUpperCase()}`);
@@ -152,5 +192,6 @@ module.exports = {
   getGameLevels,
   getGameMusic,
   getGameIcons,
+  getGameVersion,
   setGameConfig
 };

@@ -25,6 +25,15 @@ module.exports = async (req, res) => {
     await setGameConfig(type, data);
     console.log(`🔧 Admin updated configuration for type: ${type}`);
 
+    // Broadcast update globally in real-time
+    try {
+      const pusher = require('../_lib/pusher');
+      await pusher.trigger('global-config', 'config_updated', { type });
+      console.log(`📡 Broadcasted config_updated event for type: ${type}`);
+    } catch (pushErr) {
+      console.error('⚠️ Pusher trigger failed in update-config:', pushErr);
+    }
+
     return res.status(200).json({
       success: true,
       message: `Configuration for type [${type}] updated successfully.`

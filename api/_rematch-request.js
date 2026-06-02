@@ -17,9 +17,12 @@ module.exports = async (req, res) => {
 
     const room = await getRoom(code);
     if (!room) {
-      return res.status(404).json({ type: 'error', data: { message: 'Room not found' } });
+      // Room no longer exists (expired or already cleaned up) — silently succeed
+      console.log(`🔄 Rematch: room [${code}] not found (may have expired). Ignoring.`);
+      return res.status(200).json({ success: true });
     }
 
+    // If already back in lobby or playing, rematch already started — just return success
     if (room.status === 'lobby' || room.status === 'playing') {
       console.log(`🔄 Rematch already started or in progress for room [${code}]. Silently returning success.`);
       return res.status(200).json({ success: true });
@@ -29,9 +32,11 @@ module.exports = async (req, res) => {
       return res.status(400).json({ type: 'error', data: { message: 'Room not in finished state' } });
     }
 
+    // Find the player — if not found they already left, silently succeed
     const player = room.players.find(p => p.name === playerName);
     if (!player) {
-      return res.status(404).json({ type: 'error', data: { message: 'Player not found in room' } });
+      console.log(`🔄 Rematch: player [${playerName}] not found in room [${code}] (may have left). Ignoring.`);
+      return res.status(200).json({ success: true });
     }
 
     player.ready = true; // Reuse 'ready' flag for rematch agreement
@@ -44,8 +49,15 @@ module.exports = async (req, res) => {
 
     // If both players agreed to rematch → reset room and start new game
     if (room.players.length === 2 && room.players.every(p => p.ready)) {
-      const levelsData = await getGameLevels();
-      const randomLevel = levelsData[Math.floor(Math.random() * levelsData.length)];
+      let randomLevel;
+      try {
+        const levelsData = await getGameLevels();
+        randomLevel = levelsData[Math.floor(Math.random() * levelsData.length)];
+      } catch (levelErr) {
+        console.error('⚠️ Failed to get levels for rematch:', levelErr);
+        return res.status(500).json({ type: 'error', data: { message: 'Failed to get levels for rematch' } });
+      }
+
       room.level = randomLevel;
       room.status = 'lobby';
       room.startTime = null;

@@ -26,6 +26,7 @@ module.exports = async (req, res) => {
         arrowsLeft: randomLevel.arrows.length,
         status: 'playing',
         timeMs: null,
+        score: 0,
       }],
       status: 'lobby',
       startTime: null,

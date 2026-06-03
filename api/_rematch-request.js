@@ -67,6 +67,7 @@ module.exports = async (req, res) => {
         p.arrowsLeft = randomLevel.arrows.length;
         p.status = 'playing';
         p.timeMs = null;
+        p.score = 0;
       });
 
       await setRoom(code, room);

@@ -38,6 +38,7 @@ module.exports = async (req, res) => {
       arrowsLeft: room.level.arrows.length,
       status: 'playing',
       timeMs: null,
+      score: 0,
     });
 
     await setRoom(code, room);

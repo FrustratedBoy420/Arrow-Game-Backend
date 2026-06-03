@@ -6,7 +6,7 @@ module.exports = async (req, res) => {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const { name, roomCode } = req.body;
+    const { name, roomCode, scores } = req.body;
     if (!name || !roomCode) {
       return res.status(400).json({ type: 'error', data: { message: 'name and roomCode are required' } });
     }
@@ -30,19 +30,26 @@ module.exports = async (req, res) => {
     player.timeMs = timeMs;
     player.arrowsLeft = 0;
 
+    // Update final scores if provided
+    if (scores) {
+      room.players.forEach(p => {
+        if (scores[p.name] !== undefined) {
+          p.score = scores[p.name];
+        }
+      });
+    }
+
     console.log(`🏁 Player [${playerName}] finished in room [${code}] — ${(timeMs / 1000).toFixed(2)}s`);
+
+    const opponent = room.players.find(p => p.name !== playerName);
+    if (opponent && opponent.status === 'playing') {
+      opponent.status = 'failed';
+    }
 
     await setRoom(code, room);
 
-    const opponent = room.players.find(p => p.name !== playerName);
-
-    if (!opponent || opponent.status === 'won' || opponent.status === 'failed') {
-      // Both done — end match and determine winner by time
-      await endMatch(code);
-    } else {
-      // This player finished first — declare winner immediately
-      await endMatch(code, playerName);
-    }
+    // End match and let gameLogic determine the winner by comparing scores
+    await endMatch(code);
 
     return res.status(200).json({ success: true });
   } catch (err) {

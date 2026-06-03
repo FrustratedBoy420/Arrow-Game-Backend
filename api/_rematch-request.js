@@ -76,6 +76,7 @@ module.exports = async (req, res) => {
 
       await pusher.trigger(`room-${code}`, 'rematch_start', {
         players: room.players.map(p => p.name),
+        level: room.level
       });
     } else {
       await setRoom(code, room);

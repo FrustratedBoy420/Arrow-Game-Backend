@@ -22,6 +22,29 @@ module.exports = async (req, res) => {
       return res.status(400).json({ error: 'type and data are required' });
     }
 
+    if (type === 'room_terminate') {
+      const { deleteRoom } = require('../_lib/rooms');
+      const roomCode = String(data).trim().toUpperCase();
+      await deleteRoom(roomCode);
+      console.log(`🔧 Admin terminated room: ${roomCode}`);
+
+      try {
+        const pusher = require('../_lib/pusher');
+        await pusher.trigger(`room-${roomCode}`, 'room_terminated', {
+          roomCode,
+          message: 'Room was terminated by administrator.'
+        });
+        console.log(`📡 Broadcasted room_terminated event for room: ${roomCode}`);
+      } catch (pushErr) {
+        console.error('⚠️ Pusher trigger failed in update-config room_terminate:', pushErr);
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: `Room [${roomCode}] terminated successfully.`
+      });
+    }
+
     await setGameConfig(type, data);
     console.log(`🔧 Admin updated configuration for type: ${type}`);
 

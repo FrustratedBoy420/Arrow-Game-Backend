@@ -61,6 +61,7 @@ module.exports = async (req, res) => {
       room.level = randomLevel;
       room.status = 'lobby';
       room.startTime = null;
+      room.arrowOwners = {}; // Reset arrow owners
 
       room.players.forEach(p => {
         p.ready = false;

@@ -30,6 +30,7 @@ module.exports = async (req, res) => {
       }],
       status: 'lobby',
       startTime: null,
+      arrowOwners: {}, // Track which player cleared which arrow
     };
 
     await setRoom(roomCode, room);

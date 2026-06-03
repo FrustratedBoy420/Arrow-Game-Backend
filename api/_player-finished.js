@@ -30,14 +30,21 @@ module.exports = async (req, res) => {
     player.timeMs = timeMs;
     player.arrowsLeft = 0;
 
-    // Update final scores if provided
-    if (scores) {
-      room.players.forEach(p => {
-        if (scores[p.name] !== undefined) {
-          p.score = scores[p.name];
-        }
-      });
-    }
+    // Recalculate final scores from room.arrowOwners to prevent any final mismatch
+    if (!room.arrowOwners) room.arrowOwners = {};
+    const finalScores = {};
+    room.players.forEach(p => {
+      finalScores[p.name] = 0;
+    });
+    Object.values(room.arrowOwners).forEach(owner => {
+      const matchedPlayer = room.players.find(p => p.name.toLowerCase() === owner.toLowerCase());
+      if (matchedPlayer) {
+        finalScores[matchedPlayer.name]++;
+      }
+    });
+    room.players.forEach(p => {
+      p.score = finalScores[p.name] || 0;
+    });
 
     console.log(`🏁 Player [${playerName}] finished in room [${code}] — ${(timeMs / 1000).toFixed(2)}s`);
 

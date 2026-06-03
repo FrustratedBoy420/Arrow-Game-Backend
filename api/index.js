@@ -31,6 +31,7 @@ function adaptHandler(handler) {
 // Static imports so Vercel's bundler can trace and package the dependencies
 const createRoom = require('./_create-room');
 const joinRoom = require('./_join-room');
+const getRoom = require('./_get-room');
 const toggleReady = require('./_toggle-ready');
 const rematchRequest = require('./_rematch-request');
 const leaveRoom = require('./_leave-room');
@@ -49,6 +50,7 @@ const adminToggleUserLevels = require('./_admin/toggle-user-levels');
 // Map Vercel Serverless routes to local Express endpoints
 app.post('/api/create-room', adaptHandler(createRoom));
 app.post('/api/join-room', adaptHandler(joinRoom));
+app.post('/api/get-room', adaptHandler(getRoom));
 app.post('/api/toggle-ready', adaptHandler(toggleReady));
 app.post('/api/rematch-request', adaptHandler(rematchRequest));
 app.post('/api/leave-room', adaptHandler(leaveRoom));

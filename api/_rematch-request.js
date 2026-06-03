@@ -73,7 +73,6 @@ module.exports = async (req, res) => {
       console.log(`🔄 Rematch! New Level [${randomLevel.id}] in room [${code}]`);
 
       await pusher.trigger(`room-${code}`, 'rematch_start', {
-        level: randomLevel,
         players: room.players.map(p => p.name),
       });
     } else {

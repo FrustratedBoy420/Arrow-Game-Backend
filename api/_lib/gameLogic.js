@@ -45,9 +45,11 @@ async function endMatch(roomCode, declaredWinner = null) {
     }
   }
 
-  // Mark non-winners who are still 'playing' as 'failed'
+  // Mark winner as 'won' and playing non-winners as 'failed'
   room.players.forEach(p => {
-    if (p.name !== winner && p.status === 'playing') {
+    if (p.name === winner) {
+      p.status = 'won';
+    } else if (p.status === 'playing') {
       p.status = 'failed';
     }
     // Reset ready flag so it can be reused for rematch

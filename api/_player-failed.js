@@ -24,9 +24,9 @@ module.exports = async (req, res) => {
       return res.status(200).json({ success: true });
     }
 
-    player.status = 'failed';
+    player.status = 'failed_lives';
     player.timeMs = null;
-    console.log(`💀 Player [${playerName}] failed in room [${code}]`);
+    console.log(`💀 Player [${playerName}] ran out of lives in room [${code}]`);
 
     await setRoom(code, room);
 
@@ -36,7 +36,7 @@ module.exports = async (req, res) => {
       await endMatch(code); // Solo failure
     } else if (opponent.status === 'won') {
       await endMatch(code, opponent.name);
-    } else if (opponent.status === 'failed') {
+    } else if (opponent.status === 'failed' || opponent.status === 'failed_lives') {
       await endMatch(code, 'None'); // Both failed → draw
     } else {
       // Opponent still playing → they win automatically

@@ -8,6 +8,8 @@ This backend has been migrated from a long-running WebSocket server to **Vercel 
 - **Real-Time Connections**: Pusher Channels (WebSocket abstraction)
 - **Room State Persistence**: Upstash Redis (Memory DB)
 - **Game Starts Countdown**: Timestamp-based synchronized clients
+- **Session Expiration**: Auto-expires and deletes room codes older than 1 hour during retrieval in Redis.
+- **Inactivity Termination**: Deletes lobbies and broadcasts room termination when a player leaves after a 2-minute timeout.
 
 ---
 

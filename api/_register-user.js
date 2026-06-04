@@ -8,7 +8,7 @@ module.exports = async (req, res) => {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const { systemId, name, os, osVersion, highestUnlockedLevel } = req.body;
+    const { systemId } = req.body;
     if (!systemId) {
       return res.status(400).json({ error: 'systemId is required' });
     }
@@ -23,10 +23,10 @@ module.exports = async (req, res) => {
 
     const userData = {
       systemId,
-      name: name || 'Guest',
-      os: os || 'unknown',
-      osVersion: osVersion || 'unknown',
-      highestUnlockedLevel: highestUnlockedLevel || 1,
+      name: 'Guest',
+      os: 'unknown',
+      osVersion: 'unknown',
+      highestUnlockedLevel: 1,
       lastActive: Date.now(),
       unlocked
     };

@@ -56,6 +56,7 @@ module.exports = async (req, res) => {
         roomCode: code,
         players: room.players.map(p => p.name),
         level: room.level,
+        createdAt: room.createdAt,
       },
     });
   } catch (err) {

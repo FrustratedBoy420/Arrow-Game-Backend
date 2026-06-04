@@ -20,6 +20,7 @@ module.exports = async (req, res) => {
     const room = {
       code: roomCode,
       level: randomLevel,
+      createdAt: Date.now(),
       players: [{
         name: playerName,
         ready: false,
@@ -42,6 +43,7 @@ module.exports = async (req, res) => {
         roomCode,
         players: [playerName],
         level: randomLevel,
+        createdAt: room.createdAt,
       },
     });
   } catch (err) {

@@ -11,7 +11,12 @@ const ROOM_FINISHED_TTL_SECONDS = 60 * 5;
  * Returns null if the room does not exist.
  */
 async function getRoom(roomCode) {
-  return await redis.get(`room:${roomCode.toUpperCase()}`);
+  const room = await redis.get(`room:${roomCode.toUpperCase()}`);
+  if (room && room.createdAt && Date.now() - room.createdAt > 3600000) {
+    await redis.del(`room:${roomCode.toUpperCase()}`);
+    return null;
+  }
+  return room;
 }
 
 /**

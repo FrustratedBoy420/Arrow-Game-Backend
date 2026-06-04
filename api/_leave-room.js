@@ -46,21 +46,28 @@ module.exports = async (req, res) => {
           ],
         });
       } else {
-        // In lobby — just notify remaining player
-        room.players.forEach(p => { p.ready = false; });
-        await setRoom(code, room);
+        if (req.body.terminate) {
+          await deleteRoom(code);
+          await pusher.trigger(`room-${code}`, 'room_terminated', {
+            message: 'Lobby has been terminated due to 2-minute inactivity.'
+          });
+        } else {
+          // In lobby — just notify remaining player
+          room.players.forEach(p => { p.ready = false; });
+          await setRoom(code, room);
 
-        await pusher.trigger(`room-${code}`, 'player_left', {
-          playerName,
-          players: room.players.map(p => p.name),
-        });
+          await pusher.trigger(`room-${code}`, 'player_left', {
+            playerName,
+            players: room.players.map(p => p.name),
+          });
 
-        await pusher.trigger(`room-${code}`, 'ready_states', {
-          readyStates: room.players.reduce((acc, p) => {
-            acc[p.name] = p.ready;
-            return acc;
-          }, {}),
-        });
+          await pusher.trigger(`room-${code}`, 'ready_states', {
+            readyStates: room.players.reduce((acc, p) => {
+              acc[p.name] = p.ready;
+              return acc;
+            }, {}),
+          });
+        }
       }
     }
 

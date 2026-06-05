@@ -1,7 +1,7 @@
 {
-  "name": "arrow-escape-backend",
+  "name": "arrowverse-multiplayer-backend",
   "version": "2.0.0",
-  "description": "Multiplayer Backend for Arrow Escape Game (Vercel Serverless)",
+  "description": "Multiplayer Backend for ArrowVerse-Multiplayer Game (Vercel Serverless)",
   "scripts": {
     "dev-server": "vercel dev",
     "deploy": "vercel --prod"

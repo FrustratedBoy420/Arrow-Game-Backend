@@ -8,7 +8,7 @@ module.exports = async (req, res) => {
     <!DOCTYPE html>
     <html>
     <head>
-      <title>Join Arrow Escape Battle</title>
+      <title>Join ArrowVerse-Multiplayer Battle</title>
       <meta name="viewport" content="width=device-width, initial-scale=1">
       <style>
         body {
@@ -91,18 +91,18 @@ module.exports = async (req, res) => {
         <div class="code-box">${code}</div>
         
         <div>
-          <a class="btn" href="arrowescape://join/${code}">Open Game & Join</a>
+          <a class="btn" href="arrowversemultiplayer://join/${code}">Open Game & Join</a>
         </div>
         
         <p class="hint">
-          If the game doesn't open automatically, make sure you have the <strong>Arrow Escape</strong> app installed on your phone.
+          If the game doesn't open automatically, make sure you have the <strong>ArrowVerse-Multiplayer</strong> app installed on your phone.
         </p>
       </div>
 
       <script>
         // Automatically redirect to custom scheme after page loads
         setTimeout(function() {
-          window.location.href = "arrowescape://join/${code}";
+          window.location.href = "arrowversemultiplayer://join/${code}";
         }, 300);
       </script>
     </body>

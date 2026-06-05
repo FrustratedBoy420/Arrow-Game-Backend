@@ -1,4 +1,4 @@
-# Arrow Escape - Multiplayer Backend (Vercel Serverless)
+# ArrowVerse-Multiplayer - Multiplayer Backend (Vercel Serverless)
 
 This backend has been migrated from a long-running WebSocket server to **Vercel Serverless Functions**, using **Pusher Channels** for real-time events and **Upstash Redis** for storing room states.
 

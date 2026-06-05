@@ -1,5 +1,5 @@
 /**
- * Update DB Configuration Script for Arrow Escape Game
+ * Update DB Configuration Script for ArrowVerse-Multiplayer Game
  *
  * This script connects directly to Upstash Redis using credentials in the `.env` file
  * and allows you to update levels, music URLs, or icons.
@@ -58,7 +58,7 @@ async function main() {
   const command = args[0] ? args[0].toLowerCase() : 'status';
 
   console.log('==================================================');
-  console.log('🛡️  Arrow Escape - Database Config Manager');
+  console.log('🛡️  ArrowVerse-Multiplayer - Database Config Manager');
   console.log('==================================================\n');
 
   if (command === 'status') {

@@ -17,11 +17,15 @@ module.exports = async (req, res) => {
     const existingStr = await redis.get(`user:${systemId}`);
     let unlocked = false;
     let existingName = 'Guest';
+    let existingIp = 'unknown';
     if (existingStr) {
       const existing = typeof existingStr === 'string' ? JSON.parse(existingStr) : existingStr;
       unlocked = !!existing.unlocked;
       existingName = existing.name || 'Guest';
+      existingIp = existing.ip || 'unknown';
     }
+
+    const ip = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.headers['x-real-ip'] || req.socket.remoteAddress || existingIp;
 
     const userData = {
       systemId,
@@ -30,7 +34,8 @@ module.exports = async (req, res) => {
       osVersion: 'unknown',
       highestUnlockedLevel: 1,
       lastActive: Date.now(),
-      unlocked
+      unlocked,
+      ip
     };
 
     // Save to Redis with 30-day TTL (refreshed each time the user opens the app)

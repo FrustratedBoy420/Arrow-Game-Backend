@@ -1,27 +1,28 @@
 const redis = require('../_lib/redis');
 const pusher = require('../_lib/pusher');
+const { verifyAdmin } = require('../_lib/auth');
 
 module.exports = async (req, res) => {
   // CORS configuration
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-admin-secret');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-admin-secret, x-admin-username, x-admin-password');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const { systemId, unlocked } = req.body;
-    const clientSecret = req.headers['x-admin-secret'] || req.body.adminSecret;
-
-    // Security Check: If ADMIN_SECRET is set in environment, enforce it.
-    if (process.env.ADMIN_SECRET && process.env.ADMIN_SECRET !== clientSecret) {
-      return res.status(401).json({ error: 'Unauthorized: Invalid admin secret' });
+    // Security Check: Validate admin credentials.
+    if (!verifyAdmin(req)) {
+      return res.status(401).json({ error: 'Unauthorized: Invalid admin credentials' });
     }
+
+    const { systemId, unlocked } = req.body;
 
     if (!systemId) {
       return res.status(400).json({ error: 'systemId is required' });
     }
+
 
     const key = `user:${systemId}`;
     const userStr = await redis.get(key);

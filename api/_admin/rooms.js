@@ -1,20 +1,19 @@
 const redis = require('../_lib/redis');
+const { verifyAdmin } = require('../_lib/auth');
 
 module.exports = async (req, res) => {
   // CORS configuration
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-admin-secret');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-admin-secret, x-admin-username, x-admin-password');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const clientSecret = req.headers['x-admin-secret'] || req.query.adminSecret;
-
-    // Security Check: If ADMIN_SECRET is set in environment, enforce it.
-    if (process.env.ADMIN_SECRET && process.env.ADMIN_SECRET !== clientSecret) {
-      return res.status(401).json({ error: 'Unauthorized: Invalid admin secret' });
+    // Security Check: Validate admin credentials.
+    if (!verifyAdmin(req)) {
+      return res.status(401).json({ error: 'Unauthorized: Invalid admin credentials' });
     }
 
     console.log('📡 Fetching active multiplayer rooms from Redis...');

@@ -1,21 +1,21 @@
 const { setGameConfig } = require('../_lib/config');
+const { verifyAdmin } = require('../_lib/auth');
 
 module.exports = async (req, res) => {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-admin-secret');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-admin-secret, x-admin-username, x-admin-password');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const { type, data, adminSecret } = req.body;
-    const clientSecret = req.headers['x-admin-secret'] || adminSecret;
+    const { type, data } = req.body;
 
-    // Security Check: If ADMIN_SECRET is set in environment, enforce it.
-    if (process.env.ADMIN_SECRET && process.env.ADMIN_SECRET !== clientSecret) {
-      return res.status(401).json({ error: 'Unauthorized: Invalid admin secret' });
+    // Security Check: Validate admin credentials.
+    if (!verifyAdmin(req)) {
+      return res.status(401).json({ error: 'Unauthorized: Invalid admin credentials' });
     }
 
     if (!type || !data) {

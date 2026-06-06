@@ -39,6 +39,7 @@ const updateProgress = require('./_update-progress');
 const playerFinished = require('./_player-finished');
 const playerFailed = require('./_player-failed');
 const registerUser = require('./_register-user');
+const deleteUser = require('./_delete-user');
 const health = require('./_health');
 const config = require('./_config');
 
@@ -58,6 +59,7 @@ app.post('/api/update-progress', adaptHandler(updateProgress));
 app.post('/api/player-finished', adaptHandler(playerFinished));
 app.post('/api/player-failed', adaptHandler(playerFailed));
 app.post('/api/register-user', adaptHandler(registerUser));
+app.post('/api/delete-user', adaptHandler(deleteUser));
 app.get('/api/health', adaptHandler(health));
 
 // Dynamic config & Admin routes

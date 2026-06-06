@@ -8,22 +8,24 @@ module.exports = async (req, res) => {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const { systemId } = req.body;
+    const { systemId, name } = req.body;
     if (!systemId) {
       return res.status(400).json({ error: 'systemId is required' });
     }
 
-    // Retrieve existing user record to check if they are unlocked
+    // Retrieve existing user record to check if they are unlocked and keep existing name
     const existingStr = await redis.get(`user:${systemId}`);
     let unlocked = false;
+    let existingName = 'Guest';
     if (existingStr) {
       const existing = typeof existingStr === 'string' ? JSON.parse(existingStr) : existingStr;
       unlocked = !!existing.unlocked;
+      existingName = existing.name || 'Guest';
     }
 
     const userData = {
       systemId,
-      name: 'Guest',
+      name: name || existingName,
       os: 'unknown',
       osVersion: 'unknown',
       highestUnlockedLevel: 1,
